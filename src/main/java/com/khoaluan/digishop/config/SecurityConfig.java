@@ -61,7 +61,17 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173", "http://digishop.local:5173"));
+        // Dùng setAllowedOriginPatterns (thay vì setAllowedOrigins) để có thể dùng dấu * (wildcard),
+        // nhờ đó mọi domain deploy của Vercel (domain chính lẫn domain preview theo từng lần deploy,
+        // dạng digishopd-frontend-<hash>-digishop1.vercel.app) đều được backend chấp nhận,
+        // không cần whitelist thủ công từng URL preview mỗi lần deploy mới.
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:5173",
+                "http://digishop.local:5173",
+                "https://digishopd-frontend.vercel.app",
+                "https://digishopd-frontend-*.vercel.app",
+                "https://digishopd-frontend-git-*.vercel.app"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
