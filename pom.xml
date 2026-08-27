@@ -28,6 +28,12 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<!-- Bắt buộc khai báo UTF-8, nếu không maven-resources-plugin sẽ đọc
+		     application.properties bằng encoding mặc định của môi trường build
+		     (thường không phải UTF-8 trong Docker), gây lỗi MalformedInputException
+		     khi file có comment tiếng Việt có dấu. -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -86,14 +92,6 @@
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
 			<version>3.0.3</version>
-		</dependency>
-
-		<!-- Cloudinary: lưu trữ ảnh trên cloud thay vì đĩa cục bộ của Render (đĩa Render bị
-		     xóa sạch mỗi khi service restart/deploy lại/spin down) -->
-		<dependency>
-			<groupId>com.cloudinary</groupId>
-			<artifactId>cloudinary-http44</artifactId>
-			<version>1.39.0</version>
 		</dependency>
 
 		<dependency>
