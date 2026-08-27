@@ -1,5 +1,7 @@
 package com.khoaluan.digishop.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.khoaluan.digishop.exception.ApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,18 +9,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 /**
- * Lưu file ảnh trực tiếp lên đĩa cục bộ (thư mục app.upload.dir), không dùng S3/Cloudinary vì
- * không có credentials thật trong môi trường này. Ảnh được phục vụ qua WebConfig ở đường dẫn
- * public "/uploads/**". Muốn chuyển sang cloud storage sau này chỉ cần thay class này.
+ * Lưu file ảnh lên Cloudinary (cloud storage) thay vì đĩa cục bộ.
+ *
+ * LÝ DO: Render (và nhiều nền tảng PaaS free-tier khác) dùng ổ đĩa tạm thời (ephemeral disk) -
+ * mỗi khi service restart, redeploy, hoặc "ngủ" do không có traffic (free tier tự spin down),
+ * toàn bộ file đã lưu trên đĩa cục bộ sẽ bị XÓA SẠCH, dù URL vẫn còn trong database. Cloudinary
+ * lưu trữ file trên hạ tầng riêng của họ, tồn tại độc lập với vòng đời server backend.
  */
 @Slf4j
 @Service
@@ -26,29 +28,57 @@ public class FileStorageService {
 
     private static final List<String> ALLOWED_CONTENT_TYPES = List.of("image/jpeg", "image/png", "image/webp", "image/gif");
 
-    @Value("${app.upload.dir}")
-    private String uploadDir;
+    @Value("${app.cloudinary.cloud-name:}")
+    private String cloudName;
 
-    /** @return URL public để lưu vào DB (vd imageUrl của Product), ví dụ "/uploads/products/xxx.jpg" */
+    @Value("${app.cloudinary.api-key:}")
+    private String apiKey;
+
+    @Value("${app.cloudinary.api-secret:}")
+    private String apiSecret;
+
+    private Cloudinary cloudinary;
+
+    @PostConstruct
+    private void init() {
+        if (cloudName == null || cloudName.isBlank() || apiKey == null || apiKey.isBlank()
+                || apiSecret == null || apiSecret.isBlank()) {
+            log.warn("Cloudinary chưa được cấu hình đầy đủ (cloud-name/api-key/api-secret). " +
+                    "Upload ảnh sẽ báo lỗi cho tới khi cấu hình đủ 3 biến môi trường CLOUDINARY_*.");
+            return;
+        }
+        this.cloudinary = new Cloudinary(ObjectUtils.asMap(
+                "cloud_name", cloudName,
+                "api_key", apiKey,
+                "api_secret", apiSecret,
+                "secure", true
+        ));
+    }
+
+    /** @return URL public đầy đủ để lưu vào DB (vd imageUrl của Product), ví dụ "https://res.cloudinary.com/.../products/xxx.jpg" */
     public String storeProductImage(MultipartFile file) {
-        return store(file, "products");
+        return store(file, "digishop/products");
     }
 
     public String storeCategoryImage(MultipartFile file) {
-        return store(file, "categories");
+        return store(file, "digishop/categories");
     }
 
     /** Dùng khi chưa có ID thực thể (vd đang tạo sản phẩm/danh mục mới, chưa lưu) — chỉ lưu file và trả URL. */
     public String storeGeneralImage(MultipartFile file) {
-        return store(file, "general");
+        return store(file, "digishop/general");
     }
 
     /** Lưu ảnh/file cho chat hỗ trợ. */
     public String storeChatFile(MultipartFile file) {
-        return store(file, "chat");
+        return store(file, "digishop/chat");
     }
 
-    private String store(MultipartFile file, String subFolder) {
+    private String store(MultipartFile file, String folder) {
+        if (cloudinary == null) {
+            throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "CLOUDINARY_NOT_CONFIGURED",
+                    "Dịch vụ lưu trữ ảnh chưa được cấu hình trên máy chủ.");
+        }
         if (file == null || file.isEmpty()) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "EMPTY_FILE", "Vui lòng chọn file ảnh");
         }
@@ -59,27 +89,19 @@ public class FileStorageService {
         }
 
         try {
-            Path targetDir = Path.of(uploadDir, subFolder);
-            Files.createDirectories(targetDir);
-
-            String extension = extractExtension(file.getOriginalFilename());
-            String filename = UUID.randomUUID() + extension;
-            Path targetPath = targetDir.resolve(filename);
-
-            try (InputStream in = file.getInputStream()) {
-                Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+                    "folder", folder,
+                    "resource_type", "auto"
+            ));
+            String secureUrl = (String) uploadResult.get("secure_url");
+            if (secureUrl == null) {
+                throw new IOException("Cloudinary không trả về secure_url");
             }
-
-            return "/uploads/" + subFolder + "/" + filename;
+            return secureUrl;
         } catch (IOException e) {
-            log.error("Failed to store uploaded file: {}", e.getMessage(), e);
+            log.error("Failed to upload file to Cloudinary: {}", e.getMessage(), e);
             throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "UPLOAD_FAILED", "Lưu file thất bại, vui lòng thử lại");
         }
-    }
-
-    private String extractExtension(String originalFilename) {
-        if (originalFilename == null) return "";
-        int dot = originalFilename.lastIndexOf('.');
-        return dot >= 0 ? originalFilename.substring(dot) : "";
     }
 }

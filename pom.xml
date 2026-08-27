@@ -88,6 +88,14 @@
 			<version>3.0.3</version>
 		</dependency>
 
+		<!-- Cloudinary: lưu trữ ảnh trên cloud thay vì đĩa cục bộ của Render (đĩa Render bị
+		     xóa sạch mỗi khi service restart/deploy lại/spin down) -->
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http44</artifactId>
+			<version>1.39.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
