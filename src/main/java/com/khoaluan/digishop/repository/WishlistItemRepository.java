@@ -25,6 +25,9 @@ public interface WishlistItemRepository extends JpaRepository<WishlistItem, Long
 
     void deleteByUser_IdAndProduct_Id(Long userId, Long productId);
 
+    /** Xoá toàn bộ wishlist của 1 user — dùng khi admin xoá cứng tài khoản. */
+    void deleteByUser_Id(Long userId);
+
     /** Xoá hết wishlist trỏ tới 1 sản phẩm — gọi trước khi xoá sản phẩm để tránh lỗi khoá ngoại. */
     void deleteByProduct_Id(Long productId);
 }

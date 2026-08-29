@@ -18,6 +18,9 @@ public interface ProductReviewRepository extends JpaRepository<ProductReview, Lo
 
     boolean existsByProductIdAndUserId(Long productId, Long userId);
 
+    /** Xoá toàn bộ đánh giá của 1 user — dùng khi admin xoá cứng tài khoản. */
+    void deleteByUserId(Long userId);
+
     /** Lấy điểm TB + số lượng đánh giá cho TẤT CẢ sản phẩm trong 1 query, tránh N+1 khi map danh sách sản phẩm. */
     @Query("""
             SELECT r.productId AS productId, AVG(r.rating) AS avgRating, COUNT(r) AS reviewCount

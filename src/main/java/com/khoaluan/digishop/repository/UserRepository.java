@@ -7,6 +7,7 @@ import com.khoaluan.digishop.entity.UserStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -21,8 +22,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByPhone(String phone);
 
+    /**
+     * Bảng login_histories chưa có Entity/Repository riêng (tính năng lịch sử đăng nhập chưa được
+     * xây dựng ở tầng service), nên phải dọn bằng native query khi xoá cứng user, tránh sót dữ liệu
+     * mồ côi trỏ tới user_id đã xoá dù bảng này không có ràng buộc khoá ngoại chặn việc xoá.
+     */
+    @Modifying
+    @Query(value = "DELETE FROM login_histories WHERE user_id = :userId", nativeQuery = true)
+    void deleteLoginHistoriesByUserId(@Param("userId") Long userId);
+
     /** Dùng để gửi thông báo trong-app tới toàn bộ admin (đơn mới, hợp đồng vừa ký, thanh toán vừa nhận...). */
     java.util.List<User> findByRole(Role role);
+
+    /** Dùng để chặn xoá/hạ quyền Admin cuối cùng còn lại trong hệ thống. */
+    long countByRole(Role role);
 
     /** UC: GET /api/admin/users — danh sách người dùng có phân trang + lọc theo role/status/từ khoá. */
     @Query("""

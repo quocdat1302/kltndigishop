@@ -17,4 +17,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     long countByUserIdAndIsReadFalse(Long userId);
 
     Optional<Notification> findByIdAndUserId(Long id, Long userId);
+
+    /** Xoá toàn bộ thông báo của 1 user — dùng khi admin xoá cứng tài khoản. */
+    void deleteByUserId(Long userId);
 }

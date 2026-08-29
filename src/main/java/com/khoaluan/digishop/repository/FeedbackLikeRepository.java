@@ -18,6 +18,9 @@ public interface FeedbackLikeRepository extends JpaRepository<FeedbackLike, Long
     /** Xoá hết các lượt thích của 1 feedback — gọi trước khi xoá feedback để tránh lỗi khoá ngoại. */
     void deleteByFeedback_Id(Long feedbackId);
 
+    /** Xoá toàn bộ lượt thích của 1 user — dùng khi admin xoá cứng tài khoản. */
+    void deleteByUser_Id(Long userId);
+
     /** Danh sách id feedback mà user này đã thích — dùng để tô đỏ tim ở trang feedback. */
     @Query("select fl.feedback.id from FeedbackLike fl where fl.user.id = :userId")
     List<Long> findLikedFeedbackIdsByUser(@Param("userId") Long userId);

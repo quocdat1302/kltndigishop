@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -66,5 +67,16 @@ public class UserController {
             @Valid @RequestBody UpdateUserRoleRequest req
     ) {
         return userService.updateRole(id, actingAdmin.getId(), req);
+    }
+
+    /**
+     * Xoá CỨNG tài khoản + toàn bộ dữ liệu liên quan (đơn hàng, giỏ hàng, đánh giá, wishlist,
+     * thông báo, chat, hợp đồng thuê...). KHÔNG THỂ HOÀN TÁC — xem chi tiết ở UserService#deleteUserHard.
+     */
+    @DeleteMapping("/api/admin/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id, @AuthenticationPrincipal User actingAdmin) {
+        userService.deleteUserHard(id, actingAdmin.getId());
+        return ResponseEntity.noContent().build();
     }
 }
