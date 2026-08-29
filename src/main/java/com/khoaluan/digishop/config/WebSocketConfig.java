@@ -26,8 +26,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+        // Khớp với danh sách origin cho phép ở SecurityConfig (REST CORS) — WebSocket có bước
+        // bắt tay HTTP riêng nên phải khai báo allowed origin ở đây nữa, không tự dùng chung.
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://localhost:5173");
+                .setAllowedOriginPatterns(
+                        "http://localhost:5173",
+                        "http://digishop.local:5173",
+                        "https://digishopd-frontend.vercel.app",
+                        "https://digishopd-frontend-*.vercel.app",
+                        "https://digishopd-frontend-git-*.vercel.app"
+                );
     }
 
     @Override
