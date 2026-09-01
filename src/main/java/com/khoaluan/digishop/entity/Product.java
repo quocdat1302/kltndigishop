@@ -21,6 +21,13 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Thứ tự hiển thị (dùng cho sắp xếp thủ công trên trang quản lý sản phẩm).
+     * Số nhỏ hơn sẽ hiển thị trước.
+     */
+    @Column(name = "display_order")
+    private Integer displayOrder;
+
     @Column(nullable = false)
     private String name;
 

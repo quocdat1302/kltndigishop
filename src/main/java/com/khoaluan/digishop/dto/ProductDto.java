@@ -5,6 +5,7 @@ import java.util.List;
 
 public record ProductDto(
         Long id,
+        Integer displayOrder,
         String name,
         String brand,
         String type,

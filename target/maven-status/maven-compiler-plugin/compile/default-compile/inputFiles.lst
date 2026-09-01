@@ -1,6 +1,7 @@
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\config\SecurityConfig.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\config\WebConfig.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\config\WebSocketConfig.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\controller\AdminProductReviewController.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\controller\AuthController.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\controller\CartController.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\controller\CategoryController.java
@@ -18,9 +19,11 @@ D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\controller\Promo
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\controller\ReportController.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\controller\UploadController.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\controller\UserController.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\controller\WishlistController.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\DigishopApplication.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\AddToCartRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\AdminChatSendRequest.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\AdminProductReviewDto.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\AdminSendNotificationRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\ApiErrorResponse.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\AuthProvidersResponse.java
@@ -48,12 +51,14 @@ D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\GoogleLoginR
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\InspectReturnRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\LoginRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\LogoutRequest.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\LoyaltyInfoDto.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\MarkDeliveredRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\MessageResponse.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\NotificationDto.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\OrderAddonDto.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\OrderDto.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\OrderItemDto.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\OverdueRentalDto.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\PickupLocationDto.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\PickupLocationRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\ProductAddonDto.java
@@ -63,6 +68,7 @@ D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\ProductRevie
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\ProductSamplePhotoDto.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\ProductStockBreakdownDto.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\PromotionDto.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\PublishFeedbackFromReviewRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\RefreshRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\RefreshResponse.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\RegisterRequest.java
@@ -70,6 +76,9 @@ D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\RegisterResp
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\RejectReturnRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\RentalCalendarEntryDto.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\RentalContractDto.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\RentalInventoryDto.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\RentalInventoryEntryDto.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\ReorderProductsRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\RequestReturnRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\ResendOtpRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\ResetPasswordRequest.java
@@ -80,10 +89,14 @@ D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\UpdateCartIt
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\UpdateFeedbackStatusRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\UpdateOrderStatusRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\UpdateProfileRequest.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\UpdateRentalStockRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\UpdateUserRoleRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\UserDto.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\VerifyIdRequest.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\VerifyOtpRequest.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\VerifyResetOtpRequest.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\WeeklyRevenueDto.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\dto\WishlistProductDto.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\AuthProviderType.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\CartItem.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\Category.java
@@ -92,6 +105,7 @@ D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\CustomerF
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\FeedbackLike.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\FeedbackStatus.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\FulfillmentMethod.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\LoyaltyTier.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\Notification.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\NotificationType.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\Order.java
@@ -112,6 +126,7 @@ D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\RentalCon
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\Role.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\User.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\UserStatus.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\entity\WishlistItem.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\exception\ApiException.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\repository\CartItemRepository.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\repository\CategoryRepository.java
@@ -131,6 +146,7 @@ D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\repository\Promo
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\repository\RefreshTokenRepository.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\repository\RentalContractRepository.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\repository\UserRepository.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\repository\WishlistItemRepository.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\security\JwtAuthFilter.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\security\JwtService.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\security\StompAuthChannelInterceptor.java
@@ -145,6 +161,7 @@ D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\service\Facebook
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\service\FileStorageService.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\service\GoogleTokenVerifierService.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\service\InvoiceService.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\service\LoyaltyService.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\service\NotificationService.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\service\OrderEmailData.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\service\OrderService.java
@@ -155,3 +172,4 @@ D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\service\Promotio
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\service\RentalReminderScheduler.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\service\ReportService.java
 D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\service\UserService.java
+D:\Hoctap\digishop\digishop\src\main\java\com\khoaluan\digishop\service\WishlistService.java

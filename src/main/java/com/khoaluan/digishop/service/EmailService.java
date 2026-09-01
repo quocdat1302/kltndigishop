@@ -1,30 +1,38 @@
 package com.khoaluan.digishop.service;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
- * Sends transactional emails via Gmail SMTP using spring.mail.* (see application.properties).
- * Requires MAIL_PASSWORD to be a Gmail "App Password" (16 chars, generated at
- * https://myaccount.google.com/apppasswords) - the normal account password will
- * NOT work for SMTP auth once 2-Step Verification is on.
+ * Sends transactional emails via the Brevo (ex-Sendinblue) HTTP API (https://api.brevo.com/v3/smtp/email).
  *
- * All send methods are @Async and swallow SMTP failures internally (log only) so a
+ * We switched away from Gmail SMTP because Render's free web services block outbound
+ * traffic on SMTP ports 25/465/587 (see https://render.com/changelog - "Free web services
+ * will no longer allow outbound traffic to SMTP ports"), which made every OTP/order email
+ * time out in production even though it worked fine locally. The Brevo API runs over plain
+ * HTTPS (port 443), so it isn't affected by that block.
+ *
+ * Requires BREVO_API_KEY (Settings -> SMTP & API -> API Keys in the Brevo dashboard) and a
+ * sender address that has been verified in Brevo (Transactional -> Email -> Senders).
+ *
+ * All send methods are @Async and swallow API failures internally (log only) so a
  * broken/misconfigured mailer never fails checkout or blocks the scheduler. They only ever
  * take plain data (String/records), never JPA entities - entities can carry LAZY fields tied to
  * the caller's transaction/session, which would throw LazyInitializationException once accessed
@@ -35,22 +43,25 @@ import java.util.Locale;
 public class EmailService {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final String BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
-    private final JavaMailSender mailSender;
+    private final RestTemplate restTemplate;
     private final String fromAddress;
     private final String fromName;
     private final boolean mailEnabled;
+    private final String brevoApiKey;
 
     public EmailService(
-            JavaMailSender mailSender,
             @Value("${app.mail.enabled:false}") boolean mailEnabled,
             @Value("${app.mail.from}") String fromAddress,
-            @Value("${app.mail.from-name}") String fromName
+            @Value("${app.mail.from-name}") String fromName,
+            @Value("${app.mail.brevo-api-key:}") String brevoApiKey
     ) {
-        this.mailSender = mailSender;
+        this.restTemplate = new RestTemplate();
         this.mailEnabled = mailEnabled;
         this.fromAddress = fromAddress;
         this.fromName = fromName;
+        this.brevoApiKey = brevoApiKey;
     }
 
     @Async
@@ -236,18 +247,43 @@ public class EmailService {
             return;
         }
 
+        if (brevoApiKey == null || brevoApiKey.isBlank()) {
+            log.warn("Skip sending email to {} with subject '{}': app.mail.brevo-api-key (BREVO_API_KEY) is not configured.", toEmail, subject);
+            return;
+        }
+
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
-            helper.setFrom(fromAddress, fromName);
-            helper.setTo(toEmail);
-            helper.setSubject(subject);
-            helper.setText(html, true);
-            mailSender.send(message);
-        } catch (MailException | MessagingException | UnsupportedEncodingException e) {
-            // Don't leak SMTP failures as a generic 500 to the client, but do log
+            Map<String, Object> sender = new HashMap<>();
+            sender.put("email", fromAddress);
+            sender.put("name", fromName);
+
+            Map<String, Object> recipient = new HashMap<>();
+            recipient.put("email", toEmail);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("sender", sender);
+            body.put("to", List.of(recipient));
+            body.put("subject", subject);
+            body.put("htmlContent", html);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Accept", "application/json");
+            headers.set("api-key", brevoApiKey);
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+            var response = restTemplate.postForEntity(BREVO_API_URL, request, String.class);
+
+            HttpStatusCode status = response.getStatusCode();
+            if (status.is2xxSuccessful()) {
+                log.info("Sent email to {} with subject '{}' via Brevo (status {}).", toEmail, subject, status.value());
+            } else {
+                log.error("Brevo returned non-success status {} sending email to {}: {}", status.value(), toEmail, response.getBody());
+            }
+        } catch (RestClientException e) {
+            // Don't leak API failures as a generic 500 to the client, but do log
             // loudly since a broken mailer would otherwise silently break notifications.
-            log.error("Failed to send email to {}: {}", toEmail, e.getMessage(), e);
+            log.error("Failed to send email to {} via Brevo: {}", toEmail, e.getMessage(), e);
         }
     }
 

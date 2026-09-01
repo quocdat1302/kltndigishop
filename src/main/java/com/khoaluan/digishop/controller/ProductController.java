@@ -6,6 +6,7 @@ import com.khoaluan.digishop.dto.ProductAddonDto;
 import com.khoaluan.digishop.dto.ProductDto;
 import com.khoaluan.digishop.dto.ProductRequest;
 import com.khoaluan.digishop.dto.ProductSamplePhotoDto;
+import com.khoaluan.digishop.dto.ReorderProductsRequest;
 import com.khoaluan.digishop.dto.RentalInventoryDto;
 import com.khoaluan.digishop.dto.UpdateRentalStockRequest;
 import com.khoaluan.digishop.entity.Product;
@@ -104,6 +105,14 @@ public class ProductController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduct(@PathVariable Long id) {
         productService.deactivateProduct(id);
+    }
+
+    /** Cập nhật thứ tự hiển thị (kéo-thả) cho danh sách sản phẩm. */
+    @PutMapping("/admin/reorder")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reorderProducts(@Valid @RequestBody ReorderProductsRequest req) {
+        productService.reorderProducts(req.orderedIds());
     }
 
     /** Upload ảnh sản phẩm - lưu đĩa cục bộ, trả về ProductDto với imageUrl mới. */
@@ -230,6 +239,7 @@ public class ProductController {
                 .toList();
         return new ProductDto(
                 product.getId(),
+                product.getDisplayOrder(),
                 product.getName(),
                 product.getBrand(),
                 product.getType(),

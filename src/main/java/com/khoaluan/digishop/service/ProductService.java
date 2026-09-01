@@ -20,7 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -32,7 +34,7 @@ public class ProductService {
     private final OrderRepository orderRepository;
 
     public List<Product> getAllAvailableProducts() {
-        return productRepository.findByIsAvailableTrue();
+        return productRepository.findAvailableOrdered();
     }
 
     public List<Product> getHotProducts() {
@@ -72,10 +74,18 @@ public class ProductService {
 
     /** Admin xem toàn bộ sản phẩm, kể cả sản phẩm đã ngừng bán/ngừng cho thuê. */
     public List<Product> getAllProductsForAdmin() {
-        return productRepository.findAll();
+        return productRepository.findAllOrderedForAdmin();
     }
 
     public Product createProduct(ProductRequest req) {
+        Integer nextOrder = null;
+        if (req.displayOrder() != null) {
+            nextOrder = req.displayOrder();
+        } else {
+            Integer max = productRepository.findMaxDisplayOrder();
+            nextOrder = (max != null ? max : 0) + 1;
+        }
+
         Product product = Product.builder()
                 .name(req.name())
                 .brand(req.brand())
@@ -96,6 +106,7 @@ public class ProductService {
                 .productCondition(req.productCondition())
                 .isNew(req.isNew() != null ? req.isNew() : Boolean.FALSE)
                 .isHot(req.isHot() != null ? req.isHot() : Boolean.FALSE)
+                .displayOrder(nextOrder)
                 .build();
 
         return productRepository.save(product);
@@ -124,9 +135,37 @@ public class ProductService {
         if (req.productCondition() != null) product.setProductCondition(req.productCondition());
         if (req.isNew() != null) product.setIsNew(req.isNew());
         if (req.isHot() != null) product.setIsHot(req.isHot());
+        if (req.displayOrder() != null) product.setDisplayOrder(req.displayOrder());
         product.setUpdatedAt(Instant.now());
 
         return productRepository.save(product);
+    }
+
+    /**
+     * Cập nhật thứ tự hiển thị cho toàn bộ danh sách sản phẩm theo thứ tự id được gửi lên.
+     * Dùng cho UI kéo-thả ở AdminProductsPage.
+     */
+    @Transactional
+    public void reorderProducts(List<Long> orderedIds) {
+        if (orderedIds == null || orderedIds.isEmpty()) return;
+
+        List<Product> products = productRepository.findAllById(orderedIds);
+        Map<Long, Product> map = new HashMap<>();
+        for (Product p : products) map.put(p.getId(), p);
+
+        // validate: đủ id
+        for (Long id : orderedIds) {
+            if (!map.containsKey(id)) {
+                throw new ApiException(HttpStatus.NOT_FOUND, "PRODUCT_NOT_FOUND", "Không tìm thấy sản phẩm id=" + id);
+            }
+        }
+
+        for (int i = 0; i < orderedIds.size(); i++) {
+            Product p = map.get(orderedIds.get(i));
+            p.setDisplayOrder(i + 1);
+            p.setUpdatedAt(Instant.now());
+        }
+        productRepository.saveAll(products);
     }
 
     /**

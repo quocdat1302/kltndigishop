@@ -62,6 +62,12 @@ public record ProductRequest(
 
         Boolean isNew,
 
-        Boolean isHot
+        Boolean isHot,
+
+        /**
+         * Thứ tự hiển thị (tuỳ chọn). Nếu null, backend sẽ tự gán vào cuối danh sách.
+         * Dùng cho sắp xếp thủ công ở trang quản lý.
+         */
+        Integer displayOrder
 ) {
 }
