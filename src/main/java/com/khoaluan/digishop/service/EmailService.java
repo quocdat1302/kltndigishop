@@ -280,6 +280,11 @@ public class EmailService {
             } else {
                 log.error("Brevo returned non-success status {} sending email to {}: {}", status.value(), toEmail, response.getBody());
             }
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            // Log Brevo's actual error body (e.g. "unauthorized", "invalid sender", IP not
+            // whitelisted, etc.) instead of the generic "[no body]" message RestTemplate's
+            // default exception carries - this is what tells us the *real* reason for a 4xx.
+            log.error("Brevo rejected email to {} ({}): {}", toEmail, e.getStatusCode(), e.getResponseBodyAsString());
         } catch (RestClientException e) {
             // Don't leak API failures as a generic 500 to the client, but do log
             // loudly since a broken mailer would otherwise silently break notifications.
