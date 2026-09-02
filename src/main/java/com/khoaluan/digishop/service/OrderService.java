@@ -319,8 +319,19 @@ public class OrderService {
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         }
 
-        // Tiền cọc tính trên giá trị thuê gốc (chưa giảm giá, chưa gồm phụ kiện) để bảo đảm giá trị thiết bị.
-        BigDecimal deposit = subtotal.multiply(RENTAL_DEPOSIT_RATE);
+        // Tien coc PHAI tinh tren gia tri THIET BI (Product.buyPrice x quantity), khong phai gia
+        // thue: gia thue chi la phi su dung ngan han, con coc phai du suc rang buoc khach tra may -
+        // neu tinh % tren gia thue (vd 270k/ngay) thi coc chi vai chuc nghin, trong khi may co the
+        // tri gia hang chuc trieu, khong co tac dung bao dam gi ca.
+        BigDecimal deviceValue = orderItems.stream()
+                .map(item -> {
+                    BigDecimal buyPrice = item.getProduct() != null && item.getProduct().getBuyPrice() != null
+                            ? item.getProduct().getBuyPrice()
+                            : BigDecimal.ZERO;
+                    return buyPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal deposit = deviceValue.multiply(RENTAL_DEPOSIT_RATE);
 
         // Khách hàng thân thiết được tự động giảm giá thêm trên tiền thuê — cộng dồn với mã khuyến mãi nếu có.
         BigDecimal loyaltyDiscountPercent = loyaltyService.getAutoDiscountPercent(user.getId());
